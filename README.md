@@ -23,5 +23,5 @@ A link-in-bio page builder.
 
 ## Project Status
 
-Session 1: Initial setup and public landing page.
-Session 2: User registration and login with temporary client side validation
+- Session 1: Initial setup and public landing page.
+- Session 2: User registration and login with temporary client side validation
