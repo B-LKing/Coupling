@@ -1,0 +1,59 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard | LinkSpace</title>
+
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/dashboard.js" defer></script>
+</head>
+
+<body>
+
+    <header class="site-header">
+        <nav class="navbar" aria-label="Main navigation">
+            <a href="/" class="logo">LinkSpace</a>
+
+            <button id="logoutButton" class="btn btn-small">
+                Log Out
+            </button>
+        </nav>
+    </header>
+
+    <main class="dashboard-container">
+
+        <h1>My Dashboard</h1>
+
+        <p id="welcomeMessage" role="status">
+            Loading your account...
+        </p>
+
+        <section class="dashboard-card">
+            <h2>Account Information</h2>
+
+            <p>
+                <strong>Username:</strong>
+                <span id="displayUsername"></span>
+            </p>
+
+            <p>
+                <strong>Email:</strong>
+                <span id="displayEmail"></span>
+            </p>
+        </section>
+
+        <section class="dashboard-card">
+            <h2>My Link Page</h2>
+
+            <p>
+                Your page editor will be added in Session 4.
+            </p>
+        </section>
+
+    </main>
+
+</body>
+</html>
