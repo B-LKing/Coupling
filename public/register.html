@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Register | Coupling</title>
+
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/auth.js" defer></script>
+</head>
+
+<body>
+
+    <header class="site-header">
+        <nav class="navbar" aria-label="Main navigation">
+            <a href="/" class="logo">Coupling</a>
+
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/login.html">Log In</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="auth-container">
+        <section class="auth-card">
+
+            <h1>Create an Account</h1>
+            <p>Start building your personal link page.</p>
+
+            <form id="registerForm" novalidate>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+
+                    <input type="text" id="username" name="username" required minlength="3" maxlength="20" autocomplete="username" placeholder="Choose a username">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+
+                    <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+
+                    <input type="password" id="password" name="password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword"> Confirm Password </label>
+
+                    <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="new-password" placeholder="Repeat your password">
+                </div>
+
+                <p id="registerError" class="form-message" role="status" aria-live="polite"></p>
+                <button type="submit" class="btn auth-btn"> Create Account </button>
+
+            </form>
+
+            <p class="auth-footer"> Already have an account? <a href="/login.html">Log In</a> </p>
+
+        </section>
+    </main>
+
+</body>
+</html>
