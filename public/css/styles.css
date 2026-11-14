@@ -341,3 +341,89 @@ button, a {
 .dashboard-card p {
     overflow-wrap: anywhere;
 }
+
+/* Session 4: Dashboard editor */
+
+.dashboard-card {
+    margin-bottom: 25px;
+}
+
+.dashboard-card textarea {
+    width: 100%;
+    padding: 12px;
+    font-family: inherit;
+    font-size: 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    resize: vertical;
+}
+
+.dashboard-card textarea:focus {
+    outline: 2px solid #4f46e5;
+    outline-offset: 1px;
+}
+
+.link-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 18px;
+    margin-bottom: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+
+.link-information {
+    flex: 1;
+    min-width: 0;
+}
+
+.link-information p {
+    margin: 5px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.link-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-secondary {
+    background-color: #6b7280;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background-color: #4b5563;
+}
+
+.btn-danger {
+    background-color: #dc2626;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background-color: #b91c1c;
+}
+
+/* Preserve the HTML hidden attribute */
+[hidden] {
+    display: none !important;
+}
+
+@media (max-width: 600px) {
+    .link-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .link-actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+}

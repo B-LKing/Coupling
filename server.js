@@ -12,6 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const usersFile = path.join(__dirname, "data", "users.json");
+const pagesFile = path.join(__dirname, "data", "pages.json");
 
 if (!process.env.SESSION_SECRET) {
     throw new Error("SESSION_SECRET is missing from .env");
@@ -45,6 +46,69 @@ function readUsers() {
 // Write user accounts to JSON
 function writeUsers(users) {
     fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
+}
+
+
+function readPages() {
+    return JSON.parse(
+        fs.readFileSync(pagesFile, "utf8")
+    );
+}
+
+function writePages(pages) {
+    fs.writeFileSync(
+        pagesFile,
+        JSON.stringify(pages, null, 2)
+    );
+}
+
+// Find the page belonging to the current user
+function findUserPage(pages, userId) {
+    return pages.find(page => page.ownerId === userId);
+}
+
+// Create an empty page when a user doesn't have one
+function getOrCreatePage(pages, userId) {
+
+    let page = findUserPage(pages, userId);
+
+    if (!page) {
+        page = {
+            ownerId: userId,
+            displayName: "",
+            bio: "",
+            links: []
+        };
+
+        pages.push(page);
+        writePages(pages);
+    }
+
+    return page;
+}
+
+// Only allow HTTP and HTTPS links
+function isValidLinkUrl(value) {
+
+    if (typeof value !== "string" ||
+        value.length > 2048) {
+        return false;
+    }
+
+    try {
+        const url = new URL(value);
+
+        return (
+            (url.protocol === "https:" ||
+             url.protocol === "http:") &&
+            url.hostname.length > 0 &&
+            !url.username &&
+            !url.password
+        );
+
+    } catch {
+        return false;
+    }
 }
 
 // Require login for protected resources
@@ -245,6 +309,232 @@ app.get("/api/me", requireAuth, (req, res) => {
 
         res.status(500).json({
             error: "Unable to load profile."
+        });
+    }
+});
+
+// GET current user's page
+app.get("/api/page", requireAuth, (req, res) => {
+
+    try {
+        const pages = readPages();
+
+        const page = getOrCreatePage(
+            pages,
+            req.session.userId
+        );
+
+        res.json(page);
+
+    } catch (error) {
+        console.error("Page read error:", error);
+
+        res.status(500).json({
+            error: "Could not load your page."
+        });
+    }
+});
+
+// UPDATE current user's profile
+app.put("/api/page", requireAuth, (req, res) => {
+
+    const { displayName, bio } = req.body || {};
+
+    if (
+        typeof displayName !== "string" ||
+        typeof bio !== "string"
+    ) {
+        return res.status(400).json({
+            error: "Invalid profile information."
+        });
+    }
+
+    const cleanName = displayName.trim();
+    const cleanBio = bio.trim();
+
+    if (
+        cleanName.length < 1 ||
+        cleanName.length > 50 ||
+        cleanBio.length > 300
+    ) {
+        return res.status(400).json({
+            error: "Name must be 1-50 characters and bio at most 300."
+        });
+    }
+
+    try {
+        const pages = readPages();
+
+        const page = getOrCreatePage(
+            pages,
+            req.session.userId
+        );
+
+        page.displayName = cleanName;
+        page.bio = cleanBio;
+
+        writePages(pages);
+
+        res.json({
+            message: "Profile updated successfully.",
+            page: page
+        });
+
+    } catch (error) {
+        console.error("Profile update error:", error);
+
+        res.status(500).json({
+            error: "Could not update your profile."
+        });
+    }
+});
+
+// CREATE a link
+app.post("/api/links", requireAuth, (req, res) => {
+
+    const { title, url } = req.body || {};
+
+    if (
+        typeof title !== "string" ||
+        typeof url !== "string" ||
+        title.trim().length < 1 ||
+        title.trim().length > 60 ||
+        !isValidLinkUrl(url)
+    ) {
+        return res.status(400).json({
+            error: "Enter a title (1-60 characters) and a valid URL."
+        });
+    }
+
+    try {
+        const pages = readPages();
+
+        const page = getOrCreatePage(
+            pages,
+            req.session.userId
+        );
+
+        const newLink = {
+            id: crypto.randomUUID(),
+            title: title.trim(),
+            url: url.trim()
+        };
+
+        page.links.push(newLink);
+
+        writePages(pages);
+
+        res.status(201).json({
+            message: "Link added successfully.",
+            link: newLink
+        });
+
+    } catch (error) {
+        console.error("Create link error:", error);
+
+        res.status(500).json({
+            error: "Could not add the link."
+        });
+    }
+});
+
+// UPDATE an existing link
+app.put("/api/links/:id", requireAuth, (req, res) => {
+
+    const { title, url } = req.body || {};
+    const linkId = req.params.id;
+
+    if (
+        typeof title !== "string" ||
+        typeof url !== "string" ||
+        title.trim().length < 1 ||
+        title.trim().length > 60 ||
+        !isValidLinkUrl(url)
+    ) {
+        return res.status(400).json({
+            error: "Invalid title or URL."
+        });
+    }
+
+    try {
+        const pages = readPages();
+
+        const page = findUserPage(
+            pages,
+            req.session.userId
+        );
+
+        const link = page?.links.find(
+            link => link.id === linkId
+        );
+
+        if (!link) {
+            return res.status(404).json({
+                error: "Link not found."
+            });
+        }
+
+        link.title = title.trim();
+        link.url = url.trim();
+
+        writePages(pages);
+
+        res.json({
+            message: "Link updated successfully.",
+            link: link
+        });
+
+    } catch (error) {
+        console.error("Update link error:", error);
+
+        res.status(500).json({
+            error: "Could not update the link."
+        });
+    }
+});
+
+// DELETE an existing link
+app.delete("/api/links/:id", requireAuth, (req, res) => {
+
+    const linkId = req.params.id;
+
+    try {
+        const pages = readPages();
+
+        const page = findUserPage(
+            pages,
+            req.session.userId
+        );
+
+        if (!page) {
+            return res.status(404).json({
+                error: "Link not found."
+            });
+        }
+
+        const index = page.links.findIndex(
+            link => link.id === linkId
+        );
+
+        if (index === -1) {
+            return res.status(404).json({
+                error: "Link not found."
+            });
+        }
+
+        page.links.splice(index, 1);
+
+        writePages(pages);
+
+        res.json({
+            message: "Link deleted successfully."
+        });
+
+    } catch (error) {
+        console.error("Delete link error:", error);
+
+        res.status(500).json({
+            error: "Could not delete the link."
         });
     }
 });
