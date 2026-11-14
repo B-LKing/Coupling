@@ -21,6 +21,14 @@ A link-in-bio page builder.
 - Express
 - JSON file storage
 
+## Running the Project
+
+1. Install Node.js.
+2. Clone the repository.
+3. Run `npm install`.
+4. Run `npm start`.
+5. Open http://localhost:3000.
+
 ## Project Status
 
 - Session 1: Initial setup and public landing page.
