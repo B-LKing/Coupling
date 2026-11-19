@@ -7,8 +7,8 @@ A link-in-bio page builder.
 
 - Public landing page
 - User registration and login 
-- Personal dashboard (planned)
-- Link management (planned)
+- Personal dashboard 
+- Link management 
 - Public user profiles (planned)
 - Live page preview (planned)
 
@@ -33,3 +33,5 @@ A link-in-bio page builder.
 
 - Session 1: Initial setup and public landing page.
 - Session 2: User registration and login with temporary client side validation
+- Session 3: Backend authentication
+- Session 4: Dashboard and CRUD
