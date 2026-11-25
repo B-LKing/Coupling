@@ -77,6 +77,7 @@ function getOrCreatePage(pages, userId) {
             ownerId: userId,
             displayName: "",
             bio: "",
+            theme: "lavender",
             links: []
         };
 
@@ -335,14 +336,18 @@ app.get("/api/page", requireAuth, (req, res) => {
     }
 });
 
-// UPDATE current user's profile
+
+//
+// UPDATE PROFILE AND THEME
+//
 app.put("/api/page", requireAuth, (req, res) => {
 
-    const { displayName, bio } = req.body || {};
+    const { displayName, bio, theme } = req.body || {};
 
     if (
         typeof displayName !== "string" ||
-        typeof bio !== "string"
+        typeof bio !== "string" ||
+        typeof theme !== "string"
     ) {
         return res.status(400).json({
             error: "Invalid profile information."
@@ -352,13 +357,20 @@ app.put("/api/page", requireAuth, (req, res) => {
     const cleanName = displayName.trim();
     const cleanBio = bio.trim();
 
+    const allowedThemes = [
+        "lavender",
+        "midnight",
+        "forest"
+    ];
+
     if (
         cleanName.length < 1 ||
         cleanName.length > 50 ||
-        cleanBio.length > 300
+        cleanBio.length > 300 ||
+        !allowedThemes.includes(theme)
     ) {
         return res.status(400).json({
-            error: "Name must be 1-50 characters and bio at most 300."
+            error: "Invalid name, biography or theme."
         });
     }
 
@@ -372,6 +384,7 @@ app.put("/api/page", requireAuth, (req, res) => {
 
         page.displayName = cleanName;
         page.bio = cleanBio;
+        page.theme = theme;
 
         writePages(pages);
 
@@ -388,6 +401,7 @@ app.put("/api/page", requireAuth, (req, res) => {
         });
     }
 });
+
 
 // CREATE a link
 app.post("/api/links", requireAuth, (req, res) => {
@@ -590,10 +604,16 @@ app.get("/api/public/:username", (req, res) => {
             username: user.username,
             displayName: page.displayName || user.username,
             bio: page.bio || "",
-            links: page.links.map(link => ({
-                title: link.title,
-                url: link.url
-            }))
+
+            theme: ["lavender", "midnight", "forest"]
+                .includes(page.theme) ? page.theme : "lavender",
+
+            links: page.links
+                .filter(link => link.visible !== false)
+                .map(link => ({
+                    title: link.title,
+                    url: link.url
+                }))
         });
 
     } catch (error) {
@@ -615,6 +635,131 @@ app.get("/u/:username", (req, res) => {
         path.join(__dirname, "public", "profile.html")
     );
 
+});
+
+
+//
+// MOVE A LINK UP OR DOWN
+//
+app.patch("/api/links/:id/move", requireAuth, (req, res) => {
+
+    const linkId = req.params.id;
+    const { direction } = req.body || {};
+
+    // Accept only the two supported directions
+    if (direction !== "up" && direction !== "down") {
+        return res.status(400).json({
+            error: "Invalid move direction."
+        });
+    }
+
+    try {
+        const pages = readPages();
+
+        // Only access the authenticated user's page
+        const page = findUserPage(
+            pages,
+            req.session.userId
+        );
+
+        if (!page) {
+            return res.status(404).json({
+                error: "Page not found."
+            });
+        }
+
+        const index = page.links.findIndex(
+            link => link.id === linkId
+        );
+
+        if (index === -1) {
+            return res.status(404).json({
+                error: "Link not found."
+            });
+        }
+
+        const newIndex = direction === "up"
+            ? index - 1
+            : index + 1;
+
+        // Prevent moving outside the array
+        if (newIndex < 0 || newIndex >= page.links.length) {
+            return res.status(400).json({
+                error: "Link cannot move further."
+            });
+        }
+
+        // Swap the two links
+        const temp = page.links[index];
+
+        page.links[index] = page.links[newIndex];
+        page.links[newIndex] = temp;
+
+        // Persist the new ordering
+        writePages(pages);
+
+        res.json({
+            message: "Link reordered successfully."
+        });
+
+    } catch (error) {
+        console.error("Reorder error:", error);
+
+        res.status(500).json({
+            error: "Could not reorder link."
+        });
+    }
+});
+
+
+//
+// SHOW OR HIDE A LINK
+//
+app.patch("/api/links/:id/visibility", requireAuth, (req, res) => {
+
+    const linkId = req.params.id;
+    const { visible } = req.body || {};
+
+    if (typeof visible !== "boolean") {
+        return res.status(400).json({
+            error: "Visibility must be true or false."
+        });
+    }
+
+    try {
+        const pages = readPages();
+
+        const page = findUserPage(
+            pages,
+            req.session.userId
+        );
+
+        const link = page?.links.find(
+            link => link.id === linkId
+        );
+
+        if (!link) {
+            return res.status(404).json({
+                error: "Link not found."
+            });
+        }
+
+        link.visible = visible;
+
+        writePages(pages);
+
+        res.json({
+            message: "Visibility updated.",
+            link: link
+        });
+
+    } catch (error) {
+        console.error("Visibility error:", error);
+
+        res.status(500).json({
+            error: "Could not update visibility."
+        });
+    }
 });
 
 

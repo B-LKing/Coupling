@@ -48,6 +48,16 @@
                             <textarea id="bio" name="bio" rows="4" maxlength="300" placeholder="Tell people about yourself..."></textarea>
                         </div>
 
+                        <div class="form-group">
+                            <label for="themeSelect">Page Theme</label>
+
+                            <select id="themeSelect" name="theme" class="theme-select">
+                                <option value="lavender">Lavender</option>
+                                <option value="midnight">Midnight</option>
+                                <option value="forest">Forest</option>
+                            </select>
+                        </div>
+
                         <button type="submit" class="btn">
                             Save Profile
                         </button>
@@ -102,7 +112,7 @@
 
                     <div class="preview-wrapper">
 
-                        <div class="live-preview-card">
+                        <div id="livePreviewCard" class="live-preview-card theme-surface" data-theme="lavender">
 
                             <div id="previewAvatar" class="avatar">
                                 ?

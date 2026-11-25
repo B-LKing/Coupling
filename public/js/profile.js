@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const avatarElement = document.getElementById("publicAvatar");
     const linksContainer = document.getElementById("publicLinks");
     const messageElement = document.getElementById("publicMessage");
+    const publicProfileCard = document.getElementById("publicProfileCard");
 
     // Extract username from URL: /u/username
     const username = window.location.pathname.split("/")[2];
@@ -20,6 +21,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
 
         const profile = await response.json();
+
+        const allowedThemes = ["lavender", "midnight", "forest"];
+
+        publicProfileCard.dataset.theme = allowedThemes.includes(profile.theme) ? profile.theme : "lavender";
 
         // Display name and biography
         nameElement.textContent = profile.displayName;

@@ -26,6 +26,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const publicPageLink = document.getElementById("publicPageLink");
     const copyPageLink = document.getElementById("copyPageLink");
 
+    const themeSelect = document.getElementById("themeSelect");
+
+    const livePreviewCard = document.getElementById("livePreviewCard");
+
     let currentUsername = "";
 
 
@@ -90,6 +94,12 @@ document.addEventListener("DOMContentLoaded", function () {
             displayNameInput.value = page.displayName;
             bioInput.value = page.bio;
 
+            themeSelect.value = [
+                "lavender",
+                "midnight",
+                "forest"
+            ].includes(page.theme) ? page.theme : "lavender";
+
             currentLinks = page.links;
 
             renderLinks();
@@ -106,6 +116,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Read the current form values
         const name = displayNameInput.value.trim();
         const bio = bioInput.value.trim();
+        livePreviewCard.dataset.theme = themeSelect.value;
 
         // Update the profile preview
         previewName.textContent = name || currentUsername || "Your Name";
@@ -119,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
         previewLinks.replaceChildren();
 
         // Rebuild links from the saved link array
-        currentLinks.forEach(function (link) {
+        currentLinks.filter(link => link.visible !== false).forEach(function (link) {
 
             const anchor = document.createElement("a");
 
@@ -155,6 +166,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     bioInput.addEventListener("input", updatePreview);
 
+    themeSelect.addEventListener("change", updatePreview);
+
 
 
     // Display the saved links
@@ -163,7 +176,9 @@ document.addEventListener("DOMContentLoaded", function () {
         linksContainer.replaceChildren();
 
         if (currentLinks.length === 0) {
+
             const emptyMessage = document.createElement("p");
+
             emptyMessage.textContent =
                 "You haven't added any links yet.";
 
@@ -171,11 +186,12 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        currentLinks.forEach(function (link) {
+        currentLinks.forEach(function (link, index) {
 
             const item = document.createElement("div");
             item.className = "link-item";
 
+            // Link information
             const information = document.createElement("div");
             information.className = "link-information";
 
@@ -185,12 +201,62 @@ document.addEventListener("DOMContentLoaded", function () {
             const urlText = document.createElement("p");
             urlText.textContent = link.url;
 
-            information.appendChild(title);
-            information.appendChild(urlText);
+            information.append(title, urlText);
 
+            // Link actions
             const actions = document.createElement("div");
             actions.className = "link-actions";
 
+            // Move up
+            const upButton = document.createElement("button");
+            upButton.type = "button";
+            upButton.className = "btn btn-small btn-secondary";
+            upButton.textContent = "↑";
+            upButton.disabled = index === 0;
+            upButton.className = "btn btn-small btn-secondary arrow-btn";
+            upButton.setAttribute("aria-label", "Move link up");
+
+            upButton.addEventListener("click", function () {
+                moveLink(link.id, "up");
+            });
+
+            // Move down
+            const downButton = document.createElement("button");
+            downButton.type = "button";
+            downButton.className = "btn btn-small btn-secondary";
+            downButton.textContent = "↓";
+            downButton.disabled = index === currentLinks.length - 1;
+            downButton.className = "btn btn-small btn-secondary arrow-btn";
+            downButton.setAttribute("aria-label", "Move link down");
+
+            downButton.addEventListener("click", function () {
+                moveLink(link.id, "down");
+            });
+
+            // Visibility control
+            const visibilityButton = document.createElement("button");
+            visibilityButton.type = "button";
+
+            const isVisible = link.visible !== false;
+
+            visibilityButton.className = isVisible
+                ? "btn btn-small btn-visible"
+                : "btn btn-small btn-hidden";
+
+            visibilityButton.textContent = isVisible ? "Visible" : "Hidden";
+
+            visibilityButton.setAttribute(
+                "aria-label",
+                isVisible ? "Hide " + link.title : "Show " + link.title
+            );
+
+            visibilityButton.setAttribute("aria-pressed", String(isVisible));
+
+            visibilityButton.addEventListener("click", function () {
+                changeVisibility(link.id, !isVisible);
+            });
+
+            // Edit button
             const editButton = document.createElement("button");
             editButton.type = "button";
             editButton.className = "btn btn-small";
@@ -200,20 +266,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 startEditing(link);
             });
 
+            // Delete button
             const deleteButton = document.createElement("button");
             deleteButton.type = "button";
-            deleteButton.className = "btn btn-danger";
+            deleteButton.className = "btn btn-small btn-danger";
             deleteButton.textContent = "Delete";
 
             deleteButton.addEventListener("click", function () {
                 deleteLink(link.id);
             });
 
-            actions.appendChild(editButton);
-            actions.appendChild(deleteButton);
+            actions.append(
+                upButton,
+                downButton,
+                visibilityButton,
+                editButton,
+                deleteButton
+            );
 
-            item.appendChild(information);
-            item.appendChild(actions);
+            item.append(information, actions);
 
             linksContainer.appendChild(item);
         });
@@ -238,7 +309,8 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             await apiRequest("/api/page", "PUT", {
                 displayName: displayName,
-                bio: bio
+                bio: bio,
+                theme: themeSelect.value
             });
 
             showMessage("Profile saved successfully.", true);
@@ -374,6 +446,49 @@ document.addEventListener("DOMContentLoaded", function () {
         renderLinks();
         updatePreview();
     }
+
+
+    async function moveLink(linkId, direction) {
+
+        try {
+            await apiRequest(
+                "/api/links/" + encodeURIComponent(linkId) + "/move",
+                "PATCH",
+                { direction: direction }
+            );
+
+            await refreshLinks();
+
+            showMessage("Link reordered successfully.", true);
+
+        } catch (error) {
+            showMessage(error.message);
+        }
+    }
+
+
+    async function changeVisibility(linkId, visible) {
+
+        try {
+            await apiRequest(
+                "/api/links/" + encodeURIComponent(linkId) + "/visibility",
+                "PATCH",
+                { visible: visible }
+            );
+
+            await refreshLinks();
+
+            showMessage("Link visibility updated.", true);
+
+        } catch (error) {
+            showMessage(error.message);
+
+            // Restore the previous displayed state
+            await refreshLinks().catch(() => {});
+        }
+    }
+
+
 
 
     copyPageLink.addEventListener("click", async function () {

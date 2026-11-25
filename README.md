@@ -36,3 +36,4 @@ A link-in-bio page builder.
 - Session 3: Backend authentication
 - Session 4: Dashboard and CRUD
 - Session 5: Added live preview and link generation
+- Session 6: Link reordering, themes and visibility
