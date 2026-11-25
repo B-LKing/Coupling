@@ -19,6 +19,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const logoutButton = document.getElementById("logoutButton");
 
+    const previewAvatar = document.getElementById("previewAvatar");
+    const previewName = document.getElementById("previewName");
+    const previewBio = document.getElementById("previewBio");
+    const previewLinks = document.getElementById("previewLinks");
+    const publicPageLink = document.getElementById("publicPageLink");
+    const copyPageLink = document.getElementById("copyPageLink");
+
+    let currentUsername = "";
+
+
     let currentLinks = [];
     let editingLinkId = null;
 
@@ -62,6 +72,16 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             const user = await apiRequest("/api/me");
 
+            currentUsername = user.username;
+            copyPageLink.disabled = false;
+
+            // Link to this user's published public page
+            publicPageLink.href =
+                "/u/" + encodeURIComponent(user.username);
+
+            publicPageLink.hidden = false;
+
+
             welcomeMessage.textContent =
                 "Welcome back, " + user.username + "!";
 
@@ -73,11 +93,69 @@ document.addEventListener("DOMContentLoaded", function () {
             currentLinks = page.links;
 
             renderLinks();
+            updatePreview();
 
         } catch (error) {
             showMessage(error.message);
         }
     }
+
+
+    function updatePreview() {
+
+        // Read the current form values
+        const name = displayNameInput.value.trim();
+        const bio = bioInput.value.trim();
+
+        // Update the profile preview
+        previewName.textContent = name || currentUsername || "Your Name";
+
+        previewBio.textContent = bio || "Your biography";
+
+        previewAvatar.textContent =
+            previewName.textContent.charAt(0).toUpperCase();
+
+        // Clear previously displayed links
+        previewLinks.replaceChildren();
+
+        // Rebuild links from the saved link array
+        currentLinks.forEach(function (link) {
+
+            const anchor = document.createElement("a");
+
+            // This preview only displays safe URL schemes
+            try {
+                const url = new URL(link.url);
+
+                if (
+                    url.protocol !== "https:" &&
+                    url.protocol !== "http:"
+                ) {
+                    return;
+                }
+
+                anchor.href = url.href;
+
+            } catch {
+                return;
+            }
+
+            anchor.textContent = link.title;
+            anchor.className = "public-link";
+            anchor.target = "_blank";
+            anchor.rel = "noopener noreferrer";
+
+            previewLinks.appendChild(anchor);
+        });
+    }
+
+
+
+    displayNameInput.addEventListener("input", updatePreview);
+
+    bioInput.addEventListener("input", updatePreview);
+
+
 
     // Display the saved links
     function renderLinks() {
@@ -294,7 +372,30 @@ document.addEventListener("DOMContentLoaded", function () {
         currentLinks = page.links;
 
         renderLinks();
+        updatePreview();
     }
+
+
+    copyPageLink.addEventListener("click", async function () {
+
+        const pageUrl = new URL(
+            publicPageLink.getAttribute("href"),
+            window.location.origin
+        ).href;
+
+        try {
+            await navigator.clipboard.writeText(pageUrl);
+
+            showMessage("Public page URL copied!", true);
+
+        } catch (error) {
+            showMessage(
+                "Unable to copy automatically. Please copy the URL from your browser."
+            );
+        }
+
+    });
+
 
     // Log out
     logoutButton.addEventListener("click", async function () {

@@ -9,8 +9,8 @@ A link-in-bio page builder.
 - User registration and login 
 - Personal dashboard 
 - Link management 
-- Public user profiles (planned)
-- Live page preview (planned)
+- Public user profiles 
+- Live page preview
 
 ## Tech Stack
 
@@ -35,3 +35,4 @@ A link-in-bio page builder.
 - Session 2: User registration and login with temporary client side validation
 - Session 3: Backend authentication
 - Session 4: Dashboard and CRUD
+- Session 5: Added live preview and link generation

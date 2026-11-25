@@ -427,3 +427,186 @@ button, a {
         flex-wrap: wrap;
     }
 }
+
+
+/* Session 5 — Public profile */
+
+.public-profile-body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #ede9fe, #f8fafc);
+}
+
+.public-header {
+    padding: 20px 30px;
+}
+
+.public-profile-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 45px 20px;
+}
+
+.public-profile-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 35px;
+    background-color: white;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+}
+
+.public-profile-card h1 {
+    margin-bottom: 5px;
+    overflow-wrap: anywhere;
+}
+
+#publicBio {
+    color: #6b7280;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.public-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.public-link {
+    display: block;
+    padding: 14px;
+    background-color: #ede9fe;
+    color: #3730a3;
+    border-radius: 10px;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+}
+
+.public-link:hover {
+    background-color: #ddd6fe;
+}
+
+@media (max-width: 480px) {
+    .public-profile-card {
+        padding: 25px 20px;
+    }
+}
+
+
+/* Session 5 — Live dashboard preview */
+
+.preview-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 30px 15px;
+    background-color: #f3f0ff;
+    border-radius: 15px;
+    margin-top: 20px;
+}
+
+.live-preview-card {
+    width: 100%;
+    max-width: 350px;
+    padding: 30px;
+    background-color: white;
+    border-radius: 18px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+}
+
+.live-preview-card h3 {
+    font-size: 24px;
+    margin-bottom: 5px;
+    overflow-wrap: anywhere;
+}
+
+#previewBio {
+    color: #6b7280;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.preview-page-button {
+    margin-top: 20px;
+}
+
+
+/* Session 5 — Two-column dashboard layout */
+
+.dashboard-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
+    gap: 30px;
+    align-items: start;
+}
+
+.dashboard-editor,
+.dashboard-preview {
+    min-width: 0;
+}
+
+/* Sticky preview on desktop */
+
+.dashboard-preview {
+    position: sticky;
+    top: 20px;
+    align-self: start;
+}
+
+/* Allow tall previews to scroll within their column */
+.dashboard-preview .dashboard-card {
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+/* Public page buttons */
+
+.preview-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.preview-actions .btn {
+    flex: 1;
+    font-size: 14px;
+    padding: 12px;
+}
+
+.preview-actions button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Mobile layout */
+
+@media (max-width: 850px) {
+
+    .dashboard-layout {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .dashboard-preview {
+        position: static;
+    }
+
+    .dashboard-preview .dashboard-card {
+        max-height: none;
+        overflow: visible;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .preview-actions {
+        flex-direction: column;
+    }
+}

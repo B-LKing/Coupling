@@ -28,64 +28,122 @@
         <h1>My Dashboard</h1>
         <p id="welcomeMessage">Loading your account...</p>
 
-        <!-- Profile editor -->
-        <section class="dashboard-card">
-            <h2>Edit Profile</h2>
+        <div class="dashboard-layout">
 
-            <form id="profileForm" novalidate>
+            <div class="dashboard-editor">
 
-                <div class="form-group">
-                    <label for="displayName">Display Name</label>
-                    <input id="displayName" name="displayName" type="text" maxlength="50" required>
-                </div>
+                <!-- Profile editor -->
+                <section class="dashboard-card">
+                    <h2>Edit Profile</h2>
 
-                <div class="form-group">
-                    <label for="bio">Biography</label>
-                    <textarea id="bio" name="bio" rows="4" maxlength="300" placeholder="Tell people about yourself..."></textarea>
-                </div>
+                    <form id="profileForm" novalidate>
 
-                <button type="submit" class="btn">
-                    Save Profile
-                </button>
+                        <div class="form-group">
+                            <label for="displayName">Display Name</label>
+                            <input id="displayName" name="displayName" type="text" maxlength="50" required>
+                        </div>
 
-            </form>
-        </section>
+                        <div class="form-group">
+                            <label for="bio">Biography</label>
+                            <textarea id="bio" name="bio" rows="4" maxlength="300" placeholder="Tell people about yourself..."></textarea>
+                        </div>
 
-        <!-- Link editor -->
-        <section class="dashboard-card">
-            <h2 id="linkFormHeading">Add a Link</h2>
+                        <button type="submit" class="btn">
+                            Save Profile
+                        </button>
 
-            <form id="linkForm" novalidate>
+                    </form>
+                </section>
 
-                <div class="form-group">
-                    <label for="linkTitle">Link Title</label>
-                    <input id="linkTitle" name="linkTitle" type="text" maxlength="60" placeholder="Example: GitHub" required>
-                </div>
+                <!-- Link editor -->
+                <section class="dashboard-card">
+                    <h2 id="linkFormHeading">Add a Link</h2>
 
-                <div class="form-group">
-                    <label for="linkUrl">URL</label>
-                    <input id="linkUrl" name="linkUrl" type="url" placeholder="https://github.com/username" required>
-                </div>
+                    <form id="linkForm" novalidate>
 
-                <button id="saveLinkButton" type="submit" class="btn">
-                     Add Link
-                </button>
+                        <div class="form-group">
+                            <label for="linkTitle">Link Title</label>
+                            <input id="linkTitle" name="linkTitle" type="text" maxlength="60" placeholder="Example: GitHub" required>
+                        </div>
 
-                <button id="cancelEditButton" type="button" class="btn btn-secondary" hidden>
-                    Cancel Edit
-                </button>
+                        <div class="form-group">
+                            <label for="linkUrl">URL</label>
+                            <input id="linkUrl" name="linkUrl" type="url" placeholder="https://github.com/username" required>
+                        </div>
 
-            </form>
-        </section>
+                        <button id="saveLinkButton" type="submit" class="btn">
+                            Add Link
+                        </button>
 
-        <!-- Saved links -->
-        <section class="dashboard-card">
-            <h2>My Links</h2>
+                        <button id="cancelEditButton" type="button" class="btn btn-secondary" hidden>
+                            Cancel Edit
+                        </button>
 
-            <div id="linksContainer">
-                <p>Loading your links...</p>
+                    </form>
+                </section>
+
+                <!-- Saved links -->
+                <section class="dashboard-card">
+                    <h2>My Links</h2>
+
+                    <div id="linksContainer">
+                        <p>Loading your links...</p>
+                    </div>
+                </section>
+
             </div>
-        </section>
+
+            <aside class="dashboard-preview">
+
+                <!-- Live profile preview -->
+                <section class="dashboard-card">
+
+                    <h2>Live Page Preview</h2>
+
+                    <div class="preview-wrapper">
+
+                        <div class="live-preview-card">
+
+                            <div id="previewAvatar" class="avatar">
+                                ?
+                            </div>
+
+                            <h3 id="previewName">Your Name</h3>
+
+                            <p id="previewBio">Your biography</p>
+
+                            <div id="previewLinks" class="public-links">
+                            </div>
+
+                        </div>
+
+                    </div>
+                    
+                    <div class="preview-actions">
+
+                        <a id="publicPageLink"
+                        href="#"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn"
+                        hidden>
+                            View Published Page
+                        </a>
+
+                        <button id="copyPageLink"
+                                type="button"
+                                class="btn btn-secondary"
+                                disabled>
+                            Copy Page URL
+                        </button>
+
+                    </div>
+
+                </section>
+
+            </aside>
+
+        </div>
 
         <p id="dashboardMessage" class="form-message" role="status" aria-live="polite"></p>
 

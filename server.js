@@ -544,6 +544,80 @@ app.get("/dashboard", requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, "private", "dashboard.html"));
 });
 
+
+//
+// PUBLIC PROFILE API
+//
+app.get("/api/public/:username", (req, res) => {
+
+    try {
+        const username = req.params.username;
+
+        // Check username format
+        if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+            return res.status(400).json({
+                error: "Invalid username."
+            });
+        }
+
+        const users = readUsers();
+        const pages = readPages();
+
+        // Find the requested account
+        const user = users.find(user =>
+            user.username.toLowerCase() === username.toLowerCase()
+        );
+
+        if (!user) {
+            return res.status(404).json({
+                error: "Profile not found."
+            });
+        }
+
+        // Find the page belonging to that account
+        const page = pages.find(page =>
+            page.ownerId === user.id
+        );
+
+        if (!page) {
+            return res.status(404).json({
+                error: "Profile not found."
+            });
+        }
+
+        // Return ONLY publicly visible data
+        res.json({
+            username: user.username,
+            displayName: page.displayName || user.username,
+            bio: page.bio || "",
+            links: page.links.map(link => ({
+                title: link.title,
+                url: link.url
+            }))
+        });
+
+    } catch (error) {
+        console.error("Public profile error:", error);
+
+        res.status(500).json({
+            error: "Unable to load public profile."
+        });
+    }
+});
+
+
+//
+// PUBLIC PROFILE PAGE
+//
+app.get("/u/:username", (req, res) => {
+
+    res.sendFile(
+        path.join(__dirname, "public", "profile.html")
+    );
+
+});
+
+
 // Handle malformed JSON request bodies
 app.use((error, req, res, next) => {
     if (error instanceof SyntaxError && error.status === 400) {
