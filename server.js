@@ -7,6 +7,7 @@ const bcrypt = require("bcryptjs");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const { rateLimit } = require("express-rate-limit");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -35,8 +36,52 @@ app.use(session({
     }
 }));
 
+
+const APP_ORIGIN = process.env.APP_ORIGIN;
+
+if (!APP_ORIGIN) {
+    throw new Error("APP_ORIGIN is missing from .env");
+}
+
+function requireSameOrigin(req, res, next) {
+
+    const methods = ["POST", "PUT", "PATCH", "DELETE"];
+
+    // Read-only requests can continue
+    if (!methods.includes(req.method)) {
+        return next();
+    }
+
+    const origin = req.get("Origin");
+
+    // Reject requests from other or unknown origins
+    if (origin !== APP_ORIGIN) {
+        return res.status(403).json({
+            error: "Request origin not permitted."
+        });
+    }
+
+    next();
+}
+
+app.use(requireSameOrigin);
+
+
 // Serve public HTML, CSS and JavaScript
 app.use(express.static(path.join(__dirname, "public")));
+
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+
+    message: {
+        error: "Too many authentication requests. Try again later."
+    }
+});
+
 
 // Read user accounts from JSON
 function readUsers() {
@@ -89,28 +134,45 @@ function getOrCreatePage(pages, userId) {
 }
 
 // Only allow HTTP and HTTPS links
+
 function isValidLinkUrl(value) {
 
-    if (typeof value !== "string" ||
-        value.length > 2048) {
+    if (
+        typeof value !== "string" ||
+        value.length > 2048 ||
+        value !== value.trim()
+    ) {
         return false;
     }
 
     try {
         const url = new URL(value);
 
-        return (
-            (url.protocol === "https:" ||
-             url.protocol === "http:") &&
-            url.hostname.length > 0 &&
-            !url.username &&
-            !url.password
-        );
+        // Only HTTP and HTTPS links are supported
+        if (
+            url.protocol !== "https:" &&
+            url.protocol !== "http:"
+        ) {
+            return false;
+        }
+
+        // Reject links containing embedded credentials
+        if (url.username || url.password) {
+            return false;
+        }
+
+        // Require a valid hostname
+        if (!url.hostname || /\s/.test(url.hostname)) {
+            return false;
+        }
+
+        return true;
 
     } catch {
         return false;
     }
 }
+
 
 // Require login for protected resources
 function requireAuth(req, res, next) {
@@ -122,7 +184,7 @@ function requireAuth(req, res, next) {
 }
 
 // REGISTER
-app.post("/api/register", async (req, res) => {
+app.post("/api/register", authLimiter, async (req, res) => {
 
     const { username, email, password } = req.body || {};
 
@@ -155,9 +217,9 @@ app.post("/api/register", async (req, res) => {
         });
     }
 
-    if (password.length < 8 || password.length > 72) {
+    if ( password.length < 8 || Buffer.byteLength(password, "utf8") > 72 ) {
         return res.status(400).json({
-            error: "Password must be between 8 and 72 characters."
+            error: "Password must be at least 8 characters and no more than 72 UTF-8 bytes."
         });
     }
 
@@ -204,7 +266,7 @@ app.post("/api/register", async (req, res) => {
 });
 
 // LOGIN
-app.post("/api/login", async (req, res) => {
+app.post("/api/login", authLimiter, async (req, res) => {
 
     const { email, password } = req.body || {};
 
@@ -427,6 +489,12 @@ app.post("/api/links", requireAuth, (req, res) => {
             pages,
             req.session.userId
         );
+
+        if (page.links.length >= 100) {
+            return res.status(400).json({
+                error: "Maximum of 100 links per page."
+            });
+        }
 
         const newLink = {
             id: crypto.randomUUID(),
