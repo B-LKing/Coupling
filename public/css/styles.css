@@ -404,6 +404,7 @@ button, a {
     justify-content: center;
     font-size: 32px;
     font-weight: bold;
+    overflow: hidden;
 }
 
 .preview-links, .public-links {
@@ -513,6 +514,99 @@ button, a {
     cursor: not-allowed;
 }
 
+/* Profile picture and custom colour controls */
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.avatar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.avatar-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.custom-colors {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 14px;
+    margin: 0 0 20px;
+    min-width: 0;
+}
+
+.custom-colors legend {
+    font-weight: bold;
+}
+
+.color-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 20px;
+}
+
+.color-grid .form-group {
+    margin: 0;
+    min-width: 0;
+}
+
+.color-grid label {
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.color-grid input[type="color"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 36px;
+    padding: 0;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: transparent;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+/* Safari and Chrome */
+.color-grid input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.color-grid input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 7px;
+}
+
+/* Firefox */
+.color-grid input[type="color"]::-moz-color-swatch {
+    border: none;
+    border-radius: 7px;
+}
+
+.custom-colors {
+    padding: 16px;
+    margin-bottom: 20px;
+    min-width: 0;
+}
+
+#resetColorsButton {
+    margin-top: 16px;
+}
+
+@media (max-width: 480px) {
+    .color-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Shared themes: keep values and overrides together */
 .theme-surface[data-theme="lavender"] {
     --theme-bg: #ffffff;
@@ -545,6 +639,21 @@ button, a {
     --theme-button-hover: #b7dec3;
     --theme-avatar: #b7dec3;
     --theme-accent: #21573c;
+}
+
+.theme-surface[data-theme="custom"] {
+    --theme-bg: var(--custom-bg, #ffffff);
+    --theme-text: var(--custom-text, #1f2937);
+    --theme-muted: var(--theme-text);
+    --theme-button: var(--custom-link, #ede9fe);
+    --theme-button-text: var(--custom-link-text, #3730a3);
+    --theme-button-hover: var(--theme-button);
+    --theme-avatar: var(--theme-button);
+    --theme-accent: var(--theme-button-text);
+}
+
+.theme-surface[data-theme="custom"] .public-link:hover {
+    filter: brightness(0.92);
 }
 
 .theme-surface {

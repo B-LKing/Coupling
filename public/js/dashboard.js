@@ -21,7 +21,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const livePreviewCard = document.getElementById("livePreviewCard");
     const publicPageLink = document.getElementById("publicPageLink");
     const copyPageLink = document.getElementById("copyPageLink");
-    const allowedThemes = ["lavender", "midnight", "forest"];
+    const appearance = window.CouplingAppearance;
+    const allowedThemes = appearance.themes;
+    const avatarInput = document.getElementById("avatarInput");
+    const uploadAvatarButton = document.getElementById("uploadAvatarButton");
+    const removeAvatarButton = document.getElementById("removeAvatarButton");
+    const avatarMessage = document.getElementById("avatarMessage");
+    const customColors = document.getElementById("customColors");
+    const colorInputs = {
+        background: document.getElementById("colorBackground"),
+        text: document.getElementById("colorText"),
+        linkBackground: document.getElementById("colorLinkBackground"),
+        linkText: document.getElementById("colorLinkText")
+    };
+    const resetColorsButton = document.getElementById("resetColorsButton");
+    let avatarUrl = null;
+    let avatarReady = false;
+    let avatarBusy = false;
 
     let currentUsername = "";
     let currentLinks = [];
@@ -78,6 +94,10 @@ document.addEventListener("DOMContentLoaded", function () {
             displayNameInput.value = page.displayName;
             bioInput.value = page.bio;
             themeSelect.value = allowedThemes.includes(page.theme) ? page.theme : "lavender";
+            setColors(page.colors);
+            avatarUrl = page.avatarUrl || null;
+            avatarReady = true;
+            updateAvatarControls();
             displayLinks(page.links);
         } catch (error) {
             showMessage(error.message);
@@ -98,10 +118,11 @@ document.addEventListener("DOMContentLoaded", function () {
     function updatePreview() {
         const name = displayNameInput.value.trim();
         const bio = bioInput.value.trim();
-        livePreviewCard.dataset.theme = themeSelect.value;
+        customColors.hidden = themeSelect.value !== "custom";
+        appearance.applyTheme(livePreviewCard, themeSelect.value, readColors());
         previewName.textContent = name || currentUsername || "Your Name";
         previewBio.textContent = bio || "Your biography";
-        previewAvatar.textContent = previewName.textContent.charAt(0).toUpperCase();
+        appearance.renderAvatar(previewAvatar, previewName.textContent, avatarUrl);
         previewLinks.replaceChildren();
 
         for (const link of currentLinks) {
@@ -116,6 +137,78 @@ document.addEventListener("DOMContentLoaded", function () {
             anchor.target = "_blank";
             anchor.rel = "noopener noreferrer";
             previewLinks.appendChild(anchor);
+        }
+    }
+
+    // Colour pickers and picture controls share the existing live preview.
+    function readColors() {
+        return Object.fromEntries(Object.entries(colorInputs).map(([key, input]) => [key, input.value]));
+    }
+
+    function setColors(colors) {
+        const palette = appearance.getColors(colors);
+        for (const [key, input] of Object.entries(colorInputs)) input.value = palette[key];
+    }
+
+    function updateAvatarControls() {
+        avatarInput.disabled = !avatarReady || avatarBusy;
+        uploadAvatarButton.disabled = !avatarReady || avatarBusy || !avatarInput.files.length;
+        removeAvatarButton.disabled = !avatarReady || avatarBusy || !avatarUrl;
+    }
+
+    function showAvatarMessage(text, success = false) {
+        avatarMessage.textContent = text;
+        avatarMessage.classList.toggle("success", success);
+    }
+
+    async function uploadAvatar() {
+        if (!avatarReady || avatarBusy) return;
+        const file = avatarInput.files[0];
+        if (!file) return;
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+            showAvatarMessage("Choose a JPEG, PNG or WebP image up to 5 MB.");
+            return;
+        }
+        avatarBusy = true;
+        updateAvatarControls();
+        try {
+            // Send the image itself, not a JSON string or an arbitrary file path.
+            const response = await fetch("/api/page/avatar", {
+                method: "PUT", headers: { "Content-Type": file.type }, body: file
+            });
+            if (response.status === 401) {
+                window.location.replace("/login.html");
+                return;
+            }
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || "Upload failed.");
+            avatarUrl = result.avatarUrl + "?v=" + Date.now();
+            avatarInput.value = "";
+            updatePreview();
+            showAvatarMessage(result.message, true);
+        } catch (error) {
+            showAvatarMessage(error.message);
+        } finally {
+            avatarBusy = false;
+            updateAvatarControls();
+        }
+    }
+
+    async function removeAvatar() {
+        if (!avatarReady || avatarBusy || !avatarUrl) return;
+        avatarBusy = true;
+        updateAvatarControls();
+        try {
+            const result = await apiRequest("/api/page/avatar", "DELETE");
+            avatarUrl = null;
+            avatarInput.value = "";
+            updatePreview();
+            showAvatarMessage(result.message, true);
+        } catch (error) {
+            showAvatarMessage(error.message);
+        } finally {
+            avatarBusy = false;
+            updateAvatarControls();
         }
     }
 
@@ -236,6 +329,14 @@ document.addEventListener("DOMContentLoaded", function () {
     bioInput.addEventListener("input", updatePreview);
     themeSelect.addEventListener("change", updatePreview);
     cancelEditButton.addEventListener("click", resetLinkForm);
+    Object.values(colorInputs).forEach(input => input.addEventListener("input", updatePreview));
+    resetColorsButton.addEventListener("click", () => {
+        setColors();
+        updatePreview();
+    });
+    avatarInput.addEventListener("change", updateAvatarControls);
+    uploadAvatarButton.addEventListener("click", uploadAvatar);
+    removeAvatarButton.addEventListener("click", removeAvatar);
 
     profileForm.addEventListener("submit", async function (event) {
         event.preventDefault();
@@ -247,7 +348,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            await apiRequest("/api/page", "PUT", { displayName, bio, theme: themeSelect.value });
+            await apiRequest("/api/page", "PUT", {
+                displayName, bio, theme: themeSelect.value, colors: readColors()
+            });
             showMessage("Profile saved successfully.", true);
         } catch (error) {
             showMessage(error.message);

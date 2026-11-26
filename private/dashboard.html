@@ -8,6 +8,7 @@
     <title>Dashboard | Coupling</title>
 
     <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/appearance.js" defer></script>
     <script src="/js/dashboard.js" defer></script>
 </head>
 
@@ -49,14 +50,102 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="avatarInput">Profile Picture</label>
+
+                            <input id="avatarInput"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                disabled>
+
+                            <div class="avatar-actions">
+                                <button id="uploadAvatarButton"
+                                        type="button"
+                                        class="btn btn-small"
+                                        disabled>
+                                    Upload Picture
+                                </button>
+
+                                <button id="removeAvatarButton"
+                                        type="button"
+                                        class="btn btn-small btn-secondary"
+                                        disabled>
+                                    Remove Picture
+                                </button>
+                            </div>
+
+                            <p id="avatarMessage"
+                            class="form-message"
+                            role="status"
+                            aria-live="polite"></p>
+
+                            <small>
+                                JPEG, PNG or WebP, up to 5 MB.
+                                Uploading or removing saves immediately.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
                             <label for="themeSelect">Page Theme</label>
 
                             <select id="themeSelect" name="theme" class="theme-select">
                                 <option value="lavender">Lavender</option>
                                 <option value="midnight">Midnight</option>
                                 <option value="forest">Forest</option>
+                                <option value="custom">Custom</option>
                             </select>
                         </div>
+
+                        <fieldset id="customColors" class="custom-colors" hidden>
+
+                            <legend>Custom Colours</legend>
+
+                            <div class="color-grid">
+
+                                <div class="form-group">
+                                    <label for="colorBackground">
+                                        Profile Background
+                                    </label>
+                                    <input id="colorBackground"
+                                        type="color"
+                                        value="#ffffff">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="colorText">
+                                        Profile Text
+                                    </label>
+                                    <input id="colorText"
+                                        type="color"
+                                        value="#1f2937">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="colorLinkBackground">
+                                        Link Background
+                                    </label>
+                                    <input id="colorLinkBackground"
+                                        type="color"
+                                        value="#ede9fe">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="colorLinkText">
+                                        Link Text
+                                    </label>
+                                    <input id="colorLinkText"
+                                        type="color"
+                                        value="#3730a3">
+                                </div>
+
+                            </div>
+
+                            <button id="resetColorsButton"
+                                    type="button"
+                                    class="btn btn-small btn-secondary">
+                                Reset Colours
+                            </button>
+
+                        </fieldset>
 
                         <button type="submit" class="btn">
                             Save Profile

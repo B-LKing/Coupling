@@ -6,6 +6,7 @@ const bcrypt = require("bcryptjs");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const sharp = require("sharp");
 const { rateLimit } = require("express-rate-limit");
 
 // Configuration
@@ -16,7 +17,14 @@ const SESSION_SECRET = process.env.SESSION_SECRET;
 const SESSION_COOKIE = "linkspace.sid";
 const usersFile = path.join(__dirname, "data", "users.json");
 const pagesFile = path.join(__dirname, "data", "pages.json");
-const allowedThemes = ["lavender", "midnight", "forest"];
+const avatarsDir = path.join(__dirname, "data", "avatars");
+const allowedThemes = ["lavender", "midnight", "forest", "custom"];
+const defaultColors = {
+    background: "#ffffff", text: "#1f2937",
+    linkBackground: "#ede9fe", linkText: "#3730a3"
+};
+const imageTypes = { "image/jpeg": "jpeg", "image/png": "png", "image/webp": "webp" };
+const avatarLimit = 5 * 1024 * 1024;
 const usernamePattern = /^[a-zA-Z0-9_]{3,20}$/;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const writeMethods = ["POST", "PUT", "PATCH", "DELETE"];
@@ -101,12 +109,47 @@ function getOrCreatePage(pages, userId) {
             displayName: "",
             bio: "",
             theme: "lavender",
+            colors: { ...defaultColors },
             links: []
         };
         pages.push(page);
         writePages(pages);
     }
     return page;
+}
+
+// Custom palettes contain only the four expected six-digit hex colours.
+function isValidColors(colors) {
+    return colors !== null && typeof colors === "object" && !Array.isArray(colors) &&
+        Object.keys(defaultColors).every(key =>
+            typeof colors[key] === "string" && /^#[0-9a-f]{6}$/i.test(colors[key]));
+}
+
+function getColors(colors) {
+    return Object.fromEntries(Object.keys(defaultColors).map(key => [
+        key, isValidColors(colors) ? colors[key] : defaultColors[key]
+    ]));
+}
+
+// File names are generated from server-owned user IDs, never upload names.
+function avatarFile(userId) {
+    return path.join(avatarsDir, userId + ".jpg");
+}
+
+function sendAvatar(res, userId) {
+    const file = avatarFile(userId);
+    if (!fs.existsSync(file)) return res.status(404).end();
+    res.set("Cache-Control", "no-store");
+    res.set("X-Content-Type-Options", "nosniff");
+    return res.sendFile(file, { cacheControl: false });
+}
+
+function detectImageFormat(buffer) {
+    if (!Buffer.isBuffer(buffer)) return null;
+    if (buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return "jpeg";
+    if (buffer.length >= 8 && buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) return "png";
+    if (buffer.length >= 12 && buffer.toString("ascii", 0, 4) === "RIFF" && buffer.toString("ascii", 8, 12) === "WEBP") return "webp";
+    return null;
 }
 
 // Reuse link validation for creation and editing.
@@ -149,11 +192,11 @@ app.post("/api/register", authLimiter, async (req, res) => {
         return res.status(400).json({ error: "Username must be 3-20 letters, numbers or underscores." });
     }
     if (cleanEmail.length > 254 || !emailPattern.test(cleanEmail)) {
-        return res.status(400).json({ error: "Invalid email address: example@gmail.com." });
+        return res.status(400).json({ error: "Please enter a valid email." });
     }
     if (password.length < 8 || Buffer.byteLength(password, "utf8") > 72) {
         return res.status(400).json({
-            error: "Password must be between 8 and 72 characters."
+            error: "Password must be at least 8 characters and no more than 72 UTF-8 bytes."
         });
     }
 
@@ -236,14 +279,15 @@ app.get("/api/page", requireAuth, (req, res) => {
     try {
         const pages = readPages();
         const page = getOrCreatePage(pages, req.session.userId);
-        res.json(page);
+        res.json({ ...page, colors: getColors(page.colors),
+            avatarUrl: fs.existsSync(avatarFile(req.session.userId)) ? "/api/page/avatar" : null });
     } catch (error) {
         serverError(res, error, "Page read error:", "Could not load your page.");
     }
 });
 
 app.put("/api/page", requireAuth, (req, res) => {
-    const { displayName, bio, theme } = req.body || {};
+    const { displayName, bio, theme, colors } = req.body || {};
     if (typeof displayName !== "string" || typeof bio !== "string" || typeof theme !== "string") {
         return res.status(400).json({ error: "Invalid profile information." });
     }
@@ -255,16 +299,69 @@ app.put("/api/page", requireAuth, (req, res) => {
         return res.status(400).json({ error: "Invalid name, biography or theme." });
     }
 
+    if ((theme === "custom" || colors !== undefined) && !isValidColors(colors)) {
+        return res.status(400).json({ error: "Choose four valid hexadecimal colours." });
+    }
+
     try {
         const pages = readPages();
         const page = getOrCreatePage(pages, req.session.userId);
         page.displayName = cleanName;
         page.bio = cleanBio;
         page.theme = theme;
+        if (colors !== undefined) page.colors = getColors(colors);
         writePages(pages);
         res.json({ message: "Profile updated successfully.", page });
     } catch (error) {
         serverError(res, error, "Profile update error:", "Could not update your profile.");
+    }
+});
+
+// Avatar uploads use a separate, size-limited binary body instead of JSON.
+app.get("/api/page/avatar", requireAuth, (req, res) => {
+    sendAvatar(res, req.session.userId);
+});
+
+app.put("/api/page/avatar", requireAuth,
+    express.raw({ type: Object.keys(imageTypes), limit: avatarLimit, inflate: false }),
+    async (req, res) => {
+        const expectedFormat = imageTypes[req.get("Content-Type")?.split(";")[0].trim().toLowerCase()];
+        if (!expectedFormat || detectImageFormat(req.body) !== expectedFormat) {
+            return res.status(400).json({ error: "Upload a JPEG, PNG or WebP image." });
+        }
+
+        let image;
+        try {
+            // Decode the image, limit pixel count, crop and re-encode without original metadata.
+            const source = sharp(req.body, { limitInputPixels: 25_000_000 });
+            const metadata = await source.metadata();
+            if (metadata.format !== expectedFormat || (metadata.pages || 1) > 1) {
+                return res.status(400).json({ error: "Choose a non-animated JPEG, PNG or WebP image." });
+            }
+            image = await source.rotate().resize(400, 400, { fit: "cover" })
+                .flatten({ background: "#ffffff" }).jpeg({ quality: 85 }).toBuffer();
+        } catch {
+            return res.status(400).json({ error: "Invalid image or image dimensions are too large." });
+        }
+
+        try {
+            const pages = readPages();
+            getOrCreatePage(pages, req.session.userId);
+            fs.mkdirSync(avatarsDir, { recursive: true });
+            fs.writeFileSync(avatarFile(req.session.userId), image);
+            res.json({ message: "Profile picture uploaded.", avatarUrl: "/api/page/avatar" });
+        } catch (error) {
+            serverError(res, error, "Avatar upload error:", "Could not save your picture.");
+        }
+    }
+);
+
+app.delete("/api/page/avatar", requireAuth, (req, res) => {
+    try {
+        fs.rmSync(avatarFile(req.session.userId), { force: true });
+        res.json({ message: "Profile picture removed." });
+    } catch (error) {
+        serverError(res, error, "Avatar removal error:", "Could not remove your picture.");
     }
 });
 
@@ -398,11 +495,27 @@ app.get("/api/public/:username", (req, res) => {
             displayName: page.displayName || user.username,
             bio: page.bio || "",
             theme: allowedThemes.includes(page.theme) ? page.theme : "lavender",
+            colors: getColors(page.colors),
+            avatarUrl: fs.existsSync(avatarFile(user.id))
+                ? "/api/public/" + encodeURIComponent(user.username) + "/avatar" : null,
             links: page.links.filter(link => link.visible !== false)
                 .map(link => ({ title: link.title, url: link.url }))
         });
     } catch (error) {
         serverError(res, error, "Public profile error:", "Unable to load public profile.");
+    }
+});
+
+// Published avatars are readable, but only their owner can upload or remove them.
+app.get("/api/public/:username/avatar", (req, res) => {
+    try {
+        if (!usernamePattern.test(req.params.username)) return res.status(404).end();
+        const user = readUsers().find(user =>
+            user.username.toLowerCase() === req.params.username.toLowerCase());
+        if (!user || !findUserPage(readPages(), user.id)) return res.status(404).end();
+        sendAvatar(res, user.id);
+    } catch (error) {
+        serverError(res, error, "Public avatar error:", "Could not load picture.");
     }
 });
 
@@ -417,6 +530,13 @@ app.get("/u/:username", (req, res) => {
 
 // Error handling and startup
 app.use((error, req, res, next) => {
+    if (error.status === 413) {
+        return res.status(413).json({ error: req.path === "/api/page/avatar"
+            ? "Pictures must be 5 MB or smaller." : "Request is too large." });
+    }
+    if (error.status === 415) {
+        return res.status(415).json({ error: "Unsupported upload encoding." });
+    }
     if (error instanceof SyntaxError && error.status === 400) {
         return res.status(400).json({ error: "Malformed JSON request." });
     }
