@@ -1,6 +1,4 @@
-
 /* General styles */
-
 * {
     box-sizing: border-box;
 }
@@ -21,8 +19,11 @@ button, a {
     transition: 0.2s ease;
 }
 
-/* Navigation */
+[hidden] {
+    display: none !important;
+}
 
+/* Navigation */
 .site-header {
     background-color: white;
     border-bottom: 1px solid #e5e7eb;
@@ -53,8 +54,11 @@ button, a {
     color: #374151;
 }
 
-/* Buttons */
+.nav-links .btn {
+    color: white;
+}
 
+/* Buttons */
 .btn {
     display: inline-block;
     background-color: #4f46e5;
@@ -73,12 +77,43 @@ button, a {
     padding: 9px 16px;
 }
 
-.nav-links .btn {
-    color: white;
+.btn-secondary, .btn-danger {
+    border: none;
+    cursor: pointer;
 }
 
-/* Hero */
+.btn-secondary, .btn-hidden {
+    background-color: #6b7280;
+}
 
+.btn-secondary:hover, .btn-hidden:hover {
+    background-color: #4b5563;
+}
+
+.btn-danger {
+    background-color: #dc2626;
+}
+
+.btn-danger:hover {
+    background-color: #b91c1c;
+}
+
+.btn-visible {
+    background-color: #16a34a;
+}
+
+.btn-visible:hover {
+    background-color: #15803d;
+}
+
+.arrow-btn {
+    min-width: 38px;
+    width: 38px;
+    padding: 9px 0;
+    font-size: 20px;
+}
+
+/* Landing page */
 .hero {
     max-width: 1200px;
     margin: auto;
@@ -106,60 +141,6 @@ button, a {
     margin-bottom: 30px;
 }
 
-/* Sample profile preview */
-
-.preview-card {
-    flex: 0 1 350px;
-    background-color: white;
-    padding: 35px;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
-}
-
-.avatar {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 15px;
-    border-radius: 50%;
-    background-color: #ddd6fe;
-    color: #4f46e5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    font-weight: bold;
-}
-
-.preview-card h2 {
-    margin-bottom: 0;
-}
-
-.preview-card p {
-    color: #6b7280;
-}
-
-.preview-links {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 25px;
-}
-
-.preview-links a {
-    padding: 12px;
-    background-color: #ede9fe;
-    color: #3730a3;
-    border-radius: 8px;
-    font-weight: bold;
-}
-
-.preview-links a:hover {
-    background-color: #ddd6fe;
-}
-
-/* Features */
-
 .features {
     padding: 60px 20px 90px;
     background-color: #eef2ff;
@@ -185,51 +166,82 @@ button, a {
     border-radius: 12px;
 }
 
-/* Footer */
-
 .site-footer {
     padding: 25px;
     text-align: center;
     color: #6b7280;
 }
 
-/* Responsive layout */
+/* Shared form controls */
+.form-group {
+    margin-bottom: 20px;
+}
 
-@media (max-width: 768px) {
-    .hero {
-        flex-direction: column;
-        padding: 55px 20px;
-        text-align: center;
-    }
+.form-group label {
+    display: block;
+    margin-bottom: 7px;
+    font-weight: bold;
+}
 
-    .hero-content p {
-        margin-left: auto;
-        margin-right: auto;
-    }
+.form-group input,
+.form-group select,
+.dashboard-card textarea {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+}
 
-    .preview-card {
-        width: 100%;
-        max-width: 350px;
-        flex-basis: auto;
-    }
+.form-group select {
+    background-color: white;
+}
 
-    .feature-grid {
-        grid-template-columns: 1fr;
-    }
+.dashboard-card textarea {
+    font-family: inherit;
+    resize: vertical;
+}
 
-    .navbar {
-        flex-wrap: wrap;
-        gap: 15px;
-    }
+.form-group input:focus,
+.dashboard-card textarea:focus {
+    outline: 2px solid #4f46e5;
+    outline-offset: 1px;
+}
 
-    .nav-links {
-        flex-wrap: wrap;
-        gap: 12px;
-    }
+.form-message {
+    min-height: 20px;
+    font-size: 14px;
+    color: #dc2626;
+}
+
+.form-message.success {
+    color: #15803d;
+}
+
+.form-group .theme-select {
+    padding: 12px 40px 12px 16px;
+    background-color: #4f46e5;
+    color: white;
+    border: 2px solid #4f46e5;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.form-group .theme-select:hover {
+    background-color: #3730a3;
+}
+
+.form-group .theme-select:focus-visible {
+    outline: 3px solid #a5b4fc;
+    outline-offset: 3px;
+}
+
+.form-group .theme-select option {
+    background-color: white;
+    color: #1f2937;
 }
 
 /* Authentication pages */
-
 .auth-container {
     min-height: calc(100vh - 85px);
     display: flex;
@@ -258,44 +270,11 @@ button, a {
     color: #6b7280;
 }
 
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 7px;
-    font-weight: bold;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-}
-
-.form-group input:focus {
-    outline: 2px solid #4f46e5;
-    outline-offset: 1px;
-}
-
 .auth-btn {
     width: 100%;
     border: none;
     cursor: pointer;
     font-size: 16px;
-}
-
-.form-message {
-    min-height: 20px;
-    font-size: 14px;
-    color: #dc2626;
-}
-
-.form-message.success {
-    color: #15803d;
 }
 
 .auth-footer {
@@ -308,14 +287,7 @@ button, a {
     font-weight: bold;
 }
 
-@media (max-width: 480px) {
-    .auth-card {
-        padding: 25px 20px;
-    }
-}
-
-/* Dashboard */
-
+/* Dashboard layout */
 .dashboard-container {
     max-width: 1000px;
     margin: 40px auto;
@@ -326,8 +298,19 @@ button, a {
     margin-bottom: 5px;
 }
 
+.dashboard-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
+    gap: 30px;
+    align-items: start;
+}
+
+.dashboard-editor, .dashboard-preview {
+    min-width: 0;
+}
+
 .dashboard-card {
-    margin-top: 25px;
+    margin: 25px 0;
     padding: 25px;
     background-color: white;
     border-radius: 12px;
@@ -342,27 +325,18 @@ button, a {
     overflow-wrap: anywhere;
 }
 
-/* Session 4: Dashboard editor */
-
-.dashboard-card {
-    margin-bottom: 25px;
+.dashboard-preview {
+    position: sticky;
+    top: 20px;
+    align-self: start;
 }
 
-.dashboard-card textarea {
-    width: 100%;
-    padding: 12px;
-    font-family: inherit;
-    font-size: 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    resize: vertical;
+.dashboard-preview .dashboard-card {
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
 }
 
-.dashboard-card textarea:focus {
-    outline: 2px solid #4f46e5;
-    outline-offset: 1px;
-}
-
+/* Saved link management */
 .link-item {
     display: flex;
     align-items: center;
@@ -388,49 +362,92 @@ button, a {
 
 .link-actions {
     display: flex;
+    align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
 }
 
-.btn-secondary {
-    background-color: #6b7280;
-    border: none;
-    cursor: pointer;
+.link-actions button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
-.btn-secondary:hover {
-    background-color: #4b5563;
+/* Shared profile cards and links */
+.preview-card, .public-profile-card {
+    padding: 35px;
+    background-color: white;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
 }
 
-.btn-danger {
-    background-color: #dc2626;
-    border: none;
-    cursor: pointer;
+.preview-card {
+    flex: 0 1 350px;
 }
 
-.btn-danger:hover {
-    background-color: #b91c1c;
+.preview-card h2 {
+    margin-bottom: 0;
 }
 
-/* Preserve the HTML hidden attribute */
-[hidden] {
-    display: none !important;
+.preview-card p {
+    color: #6b7280;
 }
 
-@media (max-width: 600px) {
-    .link-item {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .link-actions {
-        justify-content: flex-start;
-        flex-wrap: wrap;
-    }
+.avatar {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 15px;
+    border-radius: 50%;
+    background-color: #ddd6fe;
+    color: #4f46e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: bold;
 }
 
+.preview-links, .public-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 25px;
+}
 
-/* Session 5 — Public profile */
+.preview-links a, .public-link {
+    background-color: #ede9fe;
+    color: #3730a3;
+    font-weight: bold;
+}
 
+.preview-links a {
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.public-link {
+    display: block;
+    padding: 14px;
+    border-radius: 10px;
+    overflow-wrap: anywhere;
+}
+
+.preview-links a:hover, .public-link:hover {
+    background-color: #ddd6fe;
+}
+
+#publicBio, #previewBio {
+    color: #6b7280;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.public-profile-card h1, .live-preview-card h3 {
+    margin-bottom: 5px;
+    overflow-wrap: anywhere;
+}
+
+/* Public profile */
 .public-profile-body {
     min-height: 100vh;
     display: flex;
@@ -453,54 +470,9 @@ button, a {
 .public-profile-card {
     width: 100%;
     max-width: 420px;
-    padding: 35px;
-    background-color: white;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
 }
 
-.public-profile-card h1 {
-    margin-bottom: 5px;
-    overflow-wrap: anywhere;
-}
-
-#publicBio {
-    color: #6b7280;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-}
-
-.public-links {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 25px;
-}
-
-.public-link {
-    display: block;
-    padding: 14px;
-    background-color: #ede9fe;
-    color: #3730a3;
-    border-radius: 10px;
-    font-weight: bold;
-    overflow-wrap: anywhere;
-}
-
-.public-link:hover {
-    background-color: #ddd6fe;
-}
-
-@media (max-width: 480px) {
-    .public-profile-card {
-        padding: 25px 20px;
-    }
-}
-
-
-/* Session 5 — Live dashboard preview */
-
+/* Live dashboard preview */
 .preview-wrapper {
     display: flex;
     justify-content: center;
@@ -522,50 +494,7 @@ button, a {
 
 .live-preview-card h3 {
     font-size: 24px;
-    margin-bottom: 5px;
-    overflow-wrap: anywhere;
 }
-
-#previewBio {
-    color: #6b7280;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-}
-
-.preview-page-button {
-    margin-top: 20px;
-}
-
-
-/* Session 5 — Two-column dashboard layout */
-
-.dashboard-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
-    gap: 30px;
-    align-items: start;
-}
-
-.dashboard-editor,
-.dashboard-preview {
-    min-width: 0;
-}
-
-/* Sticky preview on desktop */
-
-.dashboard-preview {
-    position: sticky;
-    top: 20px;
-    align-self: start;
-}
-
-/* Allow tall previews to scroll within their column */
-.dashboard-preview .dashboard-card {
-    max-height: calc(100vh - 40px);
-    overflow-y: auto;
-}
-
-/* Public page buttons */
 
 .preview-actions {
     display: flex;
@@ -585,46 +514,7 @@ button, a {
     cursor: not-allowed;
 }
 
-/* Mobile layout */
-
-@media (max-width: 850px) {
-
-    .dashboard-layout {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-
-    .dashboard-preview {
-        position: static;
-    }
-
-    .dashboard-preview .dashboard-card {
-        max-height: none;
-        overflow: visible;
-    }
-}
-
-@media (max-width: 480px) {
-
-    .preview-actions {
-        flex-direction: column;
-    }
-}
-
-
-/* Session 6 — Theme selector */
-
-.form-group select {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    background-color: white;
-}
-
-/* Shared theme variables */
-
+/* Shared themes: keep values and overrides together */
 .theme-surface[data-theme="lavender"] {
     --theme-bg: #ffffff;
     --theme-text: #1f2937;
@@ -658,20 +548,16 @@ button, a {
     --theme-accent: #21573c;
 }
 
-/* Apply theme to both public and preview cards */
-
 .theme-surface {
     background-color: var(--theme-bg);
     color: var(--theme-text);
 }
 
-.theme-surface h1,
-.theme-surface h3 {
+.theme-surface h1, .theme-surface h3 {
     color: var(--theme-text);
 }
 
-.theme-surface #previewBio,
-.theme-surface #publicBio {
+.theme-surface #previewBio, .theme-surface #publicBio {
     color: var(--theme-muted);
 }
 
@@ -689,131 +575,7 @@ button, a {
     background-color: var(--theme-button-hover);
 }
 
-
-/* Session 6 — Link management controls */
-
-.link-actions {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.visibility-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.visibility-label input {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-    accent-color: #4f46e5;
-}
-
-.link-information small {
-    display: block;
-    margin-top: 5px;
-    color: #6b7280;
-}
-
-.link-actions button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-@media (max-width: 600px) {
-    .link-actions {
-        justify-content: flex-start;
-    }
-}
-
-
-/* Compact arrow buttons */
-
-.arrow-btn {
-    min-width: 38px;
-    width: 38px;
-    padding: 9px 0;
-    font-size: 20px;
-    text-align: center;
-}
-
-/* Visibility buttons */
-
-.btn-visible {
-    background-color: #16a34a;
-    color: white;
-}
-
-.btn-visible:hover {
-    background-color: #15803d;
-}
-
-.btn-hidden {
-    background-color: #6b7280;
-    color: white;
-}
-
-.btn-hidden:hover {
-    background-color: #4b5563;
-}
-
-/* Keep link information readable */
-
-.link-information {
-    flex: 1;
-    min-width: 0;
-}
-
-.link-information p {
-    overflow-wrap: anywhere;
-}
-
-.link-actions {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-
-/* Styled theme dropdown */
-
-.form-group .theme-select {
-    width: 100%;
-    padding: 12px 40px 12px 16px;
-
-    background-color: #4f46e5;
-    color: white;
-
-    border: 2px solid #4f46e5;
-    border-radius: 8px;
-
-    font-size: 16px;
-    font-weight: bold;
-
-    cursor: pointer;
-}
-
-.form-group .theme-select:hover {
-    background-color: #3730a3;
-}
-
-.form-group .theme-select:focus-visible {
-    outline: 3px solid #a5b4fc;
-    outline-offset: 3px;
-}
-
-.form-group .theme-select option {
-    background-color: white;
-    color: #1f2937;
-}
-
+/* Responsive layout: all breakpoints in descending order */
 @media (max-width: 1400px) {
     .link-item {
         flex-direction: column;
@@ -822,5 +584,66 @@ button, a {
 
     .link-actions {
         justify-content: flex-start;
+    }
+}
+
+@media (max-width: 850px) {
+    .dashboard-layout {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .dashboard-preview {
+        position: static;
+    }
+
+    .dashboard-preview .dashboard-card {
+        max-height: none;
+        overflow: visible;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        flex-direction: column;
+        padding: 55px 20px;
+        text-align: center;
+    }
+
+    .hero-content p {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .preview-card {
+        width: 100%;
+        max-width: 350px;
+        flex-basis: auto;
+    }
+
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .navbar, .nav-links {
+        flex-wrap: wrap;
+    }
+
+    .navbar {
+        gap: 15px;
+    }
+
+    .nav-links {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-card, .public-profile-card {
+        padding: 25px 20px;
+    }
+
+    .preview-actions {
+        flex-direction: column;
     }
 }
