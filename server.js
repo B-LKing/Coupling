@@ -32,6 +32,15 @@ const writeMethods = ["POST", "PUT", "PATCH", "DELETE"];
 if (!SESSION_SECRET) throw new Error("SESSION_SECRET is missing from .env");
 if (!APP_ORIGIN) throw new Error("APP_ORIGIN is missing from .env");
 
+// Initialize local storage if it does not already exist.
+fs.mkdirSync(avatarsDir, { recursive: true });
+
+for (const file of [usersFile, pagesFile]) {
+    if (!fs.existsSync(file)) {
+        fs.writeFileSync(file, "[]");
+    }
+}
+
 // Middleware and authentication
 app.use(express.json({ limit: "10kb" }));
 app.use(session({
