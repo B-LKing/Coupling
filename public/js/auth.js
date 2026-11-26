@@ -49,11 +49,11 @@ document.addEventListener("DOMContentLoaded", function () {
             resetMessage(message);
 
             if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
-                message.textContent = "Invalid username.";
+                message.textContent = "Username must be 3-20 letters, numbers or underscores.";
                 return;
             }
             if (!isValidEmail(email)) {
-                message.textContent = "Invalid email address.";
+                message.textContent = "Invalid email address: example@gmail.com.";
                 return;
             }
             if (password.length < 8 || password.length > 72) {
@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
             resetMessage(message);
 
             if (!isValidEmail(email)) {
-                message.textContent = "Enter a valid email.";
+                message.textContent = "Enter a valid email: example@gmail.com.";
                 return;
             }
             if (!password) {

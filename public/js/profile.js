@@ -34,8 +34,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (!response.ok) throw new Error("Profile not found.");
         const profile = await response.json();
 
-        publicProfileCard.dataset.theme = allowedThemes.includes(profile.theme)
-            ? profile.theme : "lavender";
+        publicProfileCard.dataset.theme = allowedThemes.includes(profile.theme) ? profile.theme : "lavender";
         nameElement.textContent = profile.displayName;
         bioElement.textContent = profile.bio;
         avatarElement.textContent = profile.displayName.charAt(0).toUpperCase();

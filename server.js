@@ -149,11 +149,11 @@ app.post("/api/register", authLimiter, async (req, res) => {
         return res.status(400).json({ error: "Username must be 3-20 letters, numbers or underscores." });
     }
     if (cleanEmail.length > 254 || !emailPattern.test(cleanEmail)) {
-        return res.status(400).json({ error: "Please enter a valid email." });
+        return res.status(400).json({ error: "Invalid email address: example@gmail.com." });
     }
     if (password.length < 8 || Buffer.byteLength(password, "utf8") > 72) {
         return res.status(400).json({
-            error: "Password must be at least 8 characters and no more than 72 UTF-8 bytes."
+            error: "Password must be between 8 and 72 characters."
         });
     }
 
