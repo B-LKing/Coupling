@@ -19,10 +19,7 @@ const usersFile = path.join(__dirname, "data", "users.json");
 const pagesFile = path.join(__dirname, "data", "pages.json");
 const avatarsDir = path.join(__dirname, "data", "avatars");
 const allowedThemes = ["lavender", "midnight", "forest", "custom"];
-const defaultColors = {
-    background: "#ffffff", text: "#1f2937",
-    linkBackground: "#ede9fe", linkText: "#3730a3"
-};
+const defaultColors = { background: "#ffffff", text: "#1f2937", linkBackground: "#ede9fe", linkText: "#3730a3" };
 const imageTypes = { "image/jpeg": "jpeg", "image/png": "png", "image/webp": "webp" };
 const avatarLimit = 5 * 1024 * 1024;
 const usernamePattern = /^[a-zA-Z0-9_]{3,20}$/;

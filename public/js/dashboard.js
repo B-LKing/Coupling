@@ -62,9 +62,19 @@ document.addEventListener("DOMContentLoaded", function () {
         return result;
     }
 
-    function showMessage(text, success = false) {
-        dashboardMessage.textContent = text;
+    let messageTimer;
+
+    function showMessage(message, success = false) {
+        clearTimeout(messageTimer);
+
+        dashboardMessage.textContent = message;
         dashboardMessage.classList.toggle("success", success);
+
+        if (success) {
+            messageTimer = setTimeout(() => {
+                dashboardMessage.textContent = "";
+            }, 3000);
+        }
     }
 
     function parseHttpUrl(value) {
